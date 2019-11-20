@@ -7,28 +7,57 @@ public class Quiz {
 	private int streak;
 	private ArrayList<String> questions;
 	private ArrayList<Boolean> answers;
-	private ArrayList<ChangeListener> listeners;
+	private int correctCount;
+	private int highestStreak;
+	private int numSkipped;
 	
 	public Quiz() {
 		streak = 0;
 		questions = new ArrayList<>();
 		answers = new ArrayList<>();
+		correctCount = 0;
+		highestStreak = 0;
+		numSkipped = 0;
 	}
 	
-	public void addChangeListener(ChangeListener listener) {
-		listeners.add(listener);
-	}
 	
 	public int getStreak() {
 		return streak;
 	}
 	
 	public int setStreak(boolean correct) {
-		if (correct)
+		if (correct) {
 			streak++;
+			if (streak > highestStreak)
+				highestStreak = streak;
+		}
 		else
 			streak = 0;
 		return streak;
+	}
+	
+	public int getHighestStreak() {
+		return highestStreak;
+	}
+	
+	public void answeredCorrectly() {
+		correctCount++;
+	}
+	
+	public int getCorrect() {
+		return correctCount;
+	}
+	
+	public void skippedQuestion() {
+		numSkipped++;
+	}
+	
+	public int getSkipped() {
+		return numSkipped;
+	}
+	
+	public void reset() {
+		streak = highestStreak = correctCount = numSkipped = 0;
 	}
 		
 	public void addQuestion(String question, boolean answer) {

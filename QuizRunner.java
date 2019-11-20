@@ -1,5 +1,6 @@
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class QuizRunner {
 	
@@ -27,31 +28,9 @@ public class QuizRunner {
 		responsePane.setEditable(false);
 		
 		currentQ = 0;
+		header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(currentQ));
 		
-		
-		header = qf.formatHeader(currentQ) + qf.formatQuestion(quiz.getQuestion(currentQ));
-		
-		questionPane.setText(qf.formatStreak(quiz.getStreak()) + header);
-		
-		/*quiz.addChangeListener(event -> {
-			questionPane.setText(s);
-		});
-		
-		JButton t = new JButton("True");
-		t.addActionListener(event -> questionPane.setText(quiz.formatHeader(qf, currentQuestion) + quiz.formatFooterAnswered(qf, quiz.getAnswer(currentQuestion))));
-		
-		JButton f = new JButton("False");
-		f.addActionListener(event -> questionPane.setText(quiz.formatHeader(qf, currentQuestion) + quiz.formatFooterAnswered(qf, !quiz.getAnswer(currentQuestion))));	
-		
-		JButton skip = new JButton("Skip");
-		skip.addActionListener(event -> questionPane.setText(quiz.formatHeader(qf, currentQuestion) + quiz.formatFooterSkipped(qf, currentQuestion)));
-		
-		JButton next = new JButton("Next");
-		next.addActionListener(event -> {
-			currentQuestion++;
-			header = quiz.formatHeader(qf, currentQuestion) + quiz.formatQuestion(currentQuestion);
-			questionPane.setText(header);
-		});*/
+		questionPane.setText(qf.formatStreak(quiz.getStreak(), quiz) + header);
 		
 		JButton t = new JButton("True");
 		JButton f = new JButton("False");
@@ -64,8 +43,8 @@ public class QuizRunner {
 			skip.setEnabled(false);
 			boolean correct = quiz.getAnswer(currentQ);
 			int streak = quiz.setStreak(correct);
-			questionPane.setText(qf.formatStreak(streak) + header);
-			responsePane.setText(qf.formatResponse(correct));
+			questionPane.setText(qf.formatStreak(streak, quiz) + header);
+			responsePane.setText(qf.formatResponse(correct, quiz));
 			next.setEnabled(true);
 		});
 		
@@ -76,8 +55,8 @@ public class QuizRunner {
 			skip.setEnabled(false);
 			boolean correct = !quiz.getAnswer(currentQ);
 			int streak = quiz.setStreak(correct);
-			questionPane.setText(qf.formatStreak(streak) + header);
-			responsePane.setText(qf.formatResponse(correct));
+			questionPane.setText(qf.formatStreak(streak, quiz) + header);
+			responsePane.setText(qf.formatResponse(correct, quiz));
 			next.setEnabled(true);
 		});
 		
@@ -86,16 +65,20 @@ public class QuizRunner {
 			t.setEnabled(false);
 			f.setEnabled(false);
 			skip.setEnabled(false);
-			responsePane.setText(qf.formatSkipped(quiz.getAnswer(currentQ)));
+			responsePane.setText(qf.formatSkipped(quiz.getAnswer(currentQ), quiz));
 			next.setEnabled(true);
 		});
 		
+		// Declare quizFrame here, before adding the ActionListener to next
+		JFrame quizFrame = new JFrame();
+		JFrame resultsFrame = new JFrame();
+		JTextPane results = new JTextPane();
 		
 		next.addActionListener(event -> {
 			currentQ++;
 			if (currentQ < quiz.getNumOfQuestions()) {
-				header = qf.formatHeader(currentQ) + qf.formatQuestion(quiz.getQuestion(currentQ));
-				questionPane.setText(qf.formatStreak(quiz.getStreak()) + header);
+				header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(currentQ));
+				questionPane.setText(qf.formatStreak(quiz.getStreak(), quiz) + header);
 				responsePane.setText("");
 				t.setEnabled(true);
 				f.setEnabled(true);
@@ -103,8 +86,9 @@ public class QuizRunner {
 				next.setEnabled(false);
 			}
 			else {
-				questionPane.setText("<html><br><br><br><center><h1>Sorry, the results page has not yet been implemented.</center></h1></html>");
-				responsePane.setText("");
+				results.setText(qf.formatResults(quiz));
+				resultsFrame.setVisible(true);
+				quizFrame.setVisible(false);
 			}
 		});
 		
@@ -121,11 +105,66 @@ public class QuizRunner {
 		textPanel.add(questionPane, BorderLayout.NORTH);
 		textPanel.add(responsePane, BorderLayout.SOUTH);
 		
-		JFrame frame = new JFrame();
-		frame.add(textPanel, BorderLayout.CENTER);
-		frame.add(buttonPanel, BorderLayout.SOUTH);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		frame.setVisible(true);
+		quizFrame.add(textPanel, BorderLayout.CENTER);
+		quizFrame.add(buttonPanel, BorderLayout.SOUTH);
+		quizFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		quizFrame.pack();
+		quizFrame.setVisible(false);
+
+		////////// HOME PAGE ///////////
+		ImageIcon icon = new ImageIcon("src/logo.png");
+		Image image = icon.getImage();
+		image = image.getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH);
+		icon = new ImageIcon(image);
+		JLabel logo = new JLabel(icon);
+		logo.setBorder(new EmptyBorder(50,50,50,50));
+		
+		JTextPane title = new JTextPane();
+		title.setPreferredSize(new Dimension(500, 150));
+		title.setContentType("text/html");
+		title.setEditable(false);
+		title.setText(qf.formatHomepage());
+		
+		JButton start = new JButton("START");
+		
+		JFrame homepage = new JFrame();
+		homepage.add(title, BorderLayout.NORTH);
+		homepage.add(logo, BorderLayout.CENTER);
+		homepage.add(start, BorderLayout.SOUTH);
+		homepage.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		homepage.pack();
+		homepage.setVisible(true);
+		
+		start.addActionListener(event -> {
+			header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(currentQ));
+			questionPane.setText(qf.formatStreak(quiz.getStreak(), quiz) + header);
+			quizFrame.setVisible(true);
+			homepage.setVisible(false);
+		});
+		
+		
+		////////// RESULTS PAGE ////////////
+		JButton returnHome = new JButton("Return to home page");
+
+		results.setPreferredSize(new Dimension(500, 450));
+		results.setContentType("text/html");
+		results.setEditable(false);
+		
+		resultsFrame.add(results);
+		resultsFrame.add(returnHome, BorderLayout.SOUTH);
+		resultsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		resultsFrame.pack();
+		resultsFrame.setVisible(false);
+		
+		returnHome.addActionListener(event -> {
+			homepage.setVisible(true);
+			resultsFrame.setVisible(false);;
+			responsePane.setText("");
+			quiz.reset();
+			currentQ = 0;
+			t.setEnabled(true);
+			f.setEnabled(true);
+			skip.setEnabled(true);
+		});
 	}
 }
