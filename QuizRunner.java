@@ -6,14 +6,39 @@ public class QuizRunner {
 	
 	private static int currentQ;
 	private static String header;
+	private static int[] questionList;
+	
+	private static int[] pickQuestions() {
+		int[] questionList = {-1, -1, -1, -1, -1};
+		int i = 0;
+		while (i < questionList.length) {
+			int questionNumber = (int)(Math.random()*10);
+			boolean present = false;
+			int j = 0;
+			while (!present && j < questionList.length){
+				if (questionList[j] == questionNumber)
+					present = true;
+				++j;
+			}
+			if (!present)
+				questionList[i++] = questionNumber;
+		}
+		return questionList;
+	}
 	
 	public static void main(String[] args) {
 		
 		Quiz quiz = new Quiz();
-		quiz.addQuestion("Software often costs more to maintain than to develop.", true);
-		quiz.addQuestion("Functional software engineering activities include specification, development, validation, and evolution.", true);
-		quiz.addQuestion("The waterfall model is a software process that interleaves development stages.", false);
-		quiz.addQuestion("Stages of software product testing include component testing, system testing, and robustness testing.", false);
+		quiz.addQuestion("Frogs are cold blooded animals.", true);
+		quiz.addQuestion("Stretching for over 1,429 miles, The Great Barrier Reef is the largest living structure on Earth.", true);
+		quiz.addQuestion("Wolves are the fastest land animals.", false);
+		quiz.addQuestion("Albert Einstein was the first to detect radioactivity.", false);
+		quiz.addQuestion("Velocity is another name for time.", false);
+		quiz.addQuestion("Pumice floats on water.", true);
+		quiz.addQuestion("Neutrons are positively charged.", false);
+		quiz.addQuestion("Before it has erupted, molten rock is known as lava.", false);
+		quiz.addQuestion("Electrons orbit the nucleus of an atom.", true);
+		quiz.addQuestion("Issac is the first name of the scientist that gave us Newton's three laws.", true);
 		
 		QuizFormatter qf = new QuizFormatter();
 		
@@ -27,10 +52,8 @@ public class QuizRunner {
 		responsePane.setContentType("text/html");
 		responsePane.setEditable(false);
 		
+		questionList = pickQuestions();	
 		currentQ = 0;
-		header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(currentQ));
-		
-		questionPane.setText(qf.formatStreak(quiz.getStreak(), quiz) + header);
 		
 		JButton t = new JButton("True");
 		JButton f = new JButton("False");
@@ -41,7 +64,7 @@ public class QuizRunner {
 			t.setEnabled(false);
 			f.setEnabled(false);
 			skip.setEnabled(false);
-			boolean correct = quiz.getAnswer(currentQ);
+			boolean correct = quiz.getAnswer(questionList[currentQ]);
 			int streak = quiz.setStreak(correct);
 			questionPane.setText(qf.formatStreak(streak, quiz) + header);
 			responsePane.setText(qf.formatResponse(correct, quiz));
@@ -53,7 +76,7 @@ public class QuizRunner {
 			t.setEnabled(false);
 			f.setEnabled(false);
 			skip.setEnabled(false);
-			boolean correct = !quiz.getAnswer(currentQ);
+			boolean correct = !quiz.getAnswer(questionList[currentQ]);
 			int streak = quiz.setStreak(correct);
 			questionPane.setText(qf.formatStreak(streak, quiz) + header);
 			responsePane.setText(qf.formatResponse(correct, quiz));
@@ -65,7 +88,7 @@ public class QuizRunner {
 			t.setEnabled(false);
 			f.setEnabled(false);
 			skip.setEnabled(false);
-			responsePane.setText(qf.formatSkipped(quiz.getAnswer(currentQ), quiz));
+			responsePane.setText(qf.formatSkipped(quiz.getAnswer(questionList[currentQ]), quiz));
 			next.setEnabled(true);
 		});
 		
@@ -75,9 +98,9 @@ public class QuizRunner {
 		JTextPane results = new JTextPane();
 		
 		next.addActionListener(event -> {
-			currentQ++;
-			if (currentQ < quiz.getNumOfQuestions()) {
-				header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(currentQ));
+			++currentQ;
+			if (currentQ < 5) {
+				header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(questionList[currentQ]));
 				questionPane.setText(qf.formatStreak(quiz.getStreak(), quiz) + header);
 				responsePane.setText("");
 				t.setEnabled(true);
@@ -136,7 +159,7 @@ public class QuizRunner {
 		homepage.setVisible(true);
 		
 		start.addActionListener(event -> {
-			header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(currentQ));
+			header = qf.formatHeader(currentQ, quiz) + qf.formatQuestion(quiz.getQuestion(questionList[currentQ]));
 			questionPane.setText(qf.formatStreak(quiz.getStreak(), quiz) + header);
 			quizFrame.setVisible(true);
 			homepage.setVisible(false);
@@ -162,6 +185,7 @@ public class QuizRunner {
 			responsePane.setText("");
 			quiz.reset();
 			currentQ = 0;
+			questionList = pickQuestions();
 			t.setEnabled(true);
 			f.setEnabled(true);
 			skip.setEnabled(true);
